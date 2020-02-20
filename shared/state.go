@@ -1,18 +1,21 @@
 package shared
 
-//go:generate stringer -type=ChainHandledState
+//go:generate stringer -type=ChainState
 
-type ChainHandledState int
+type ChainState int
 
-func (p ChainHandledState) Failed() bool {
-	return p == ChainHandledStateThenFailed ||
-		p == ChainHandledStateElseFailed
+func (p ChainState) Failed() bool {
+	return p == ChainStateThenFailed ||
+		p == ChainStateElseFailed
+}
+
+func (p ChainState) Ok() bool {
+	return p == ChainStateFinished
 }
 
 const (
-	ChainHandledStateThenFailed ChainHandledState = iota
-	ChainHandledStateElseFailed
-	ChainHandledStateUnhandled
-	ChainHandledStateThen
-	ChainHandledStateElse
+	ChainStateThenFailed ChainState = iota
+	ChainStateElseFailed
+	ChainStateUnhandled
+	ChainStateFinished
 )

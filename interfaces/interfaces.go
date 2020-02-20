@@ -1,6 +1,10 @@
-package processchain
+package interfaces
 
 import "github.com/denkhaus/processchain/shared"
+
+type Chain interface {
+	WithContext(ctx *shared.ModuleContext) interface{}
+}
 
 type Combinable interface {
 	Or(or ...Combinable) Combinable
@@ -8,17 +12,20 @@ type Combinable interface {
 	Not(not ...Combinable) Combinable
 }
 
-type Alternative interface {
-	Else(fns ...shared.Handler) Catchable
-	Catch(fn shared.ErrorHandler) Executable
-}
-
 type Catchable interface {
 	Catch(fn shared.ErrorHandler) Executable
 }
 
+type Alternative interface {
+	Catchable
+	Else(fns ...shared.Handler) Catchable
+}
+
+type Optionable interface {
+	WithOptions(options shared.Option) Proceedable
+}
 type Executable interface {
-	Execute() shared.ChainHandledState
+	Execute() shared.ChainState
 }
 
 type Proceedable interface {
@@ -26,5 +33,6 @@ type Proceedable interface {
 }
 
 type Startable interface {
+	Proceedable
 	If(comb Combinable) Proceedable
 }

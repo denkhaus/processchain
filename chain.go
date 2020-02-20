@@ -1,9 +1,10 @@
 package processchain
 
 import (
+	"github.com/denkhaus/processchain/interfaces"
 	"github.com/denkhaus/processchain/shared"
-	"github.com/juju/errors"
 	"github.com/lann/builder"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -13,88 +14,66 @@ var (
 type chain builder.Builder
 
 type ActionData struct {
-	// EntityDescriptor shared.EntityDescriptor
-	// Operation        shared.Operation
-	// FieldOperation   shared.Operation
+	Context       *shared.ModuleContext
 	ErrorHandlers shared.ErrorHandlers
 	Then          shared.Handlers
 	Else          shared.Handlers
 	Conditions    shared.EvalFuncs
-	//	FieldName        string
-	Or  []ActionData
-	And []ActionData
-	Not []ActionData
+	Or            []ActionData
+	And           []ActionData
+	Not           []ActionData
 }
 
-func (b chain) FromGraphQL(gql string) Proceedable {
-	return builder.Set(b, "Operation", "created").(Proceedable)
+func (b chain) FromGraphQL(gql string) interfaces.Proceedable {
+	return builder.Set(b, "Operation", "created").(interfaces.Proceedable)
 }
 
-func (b chain) Or(or ...Combinable) Combinable {
+func (b chain) Or(or ...interfaces.Combinable) interfaces.Combinable {
 	data := []interface{}{}
 	for _, o := range or {
 		data = append(data, builder.GetStruct(o))
 	}
-	return builder.Append(b, "Or", data...).(Combinable)
+	return builder.Append(b, "Or", data...).(interfaces.Combinable)
 }
 
-func (b chain) And(and ...Combinable) Combinable {
+func (b chain) And(and ...interfaces.Combinable) interfaces.Combinable {
 	data := []interface{}{}
 	for _, a := range and {
 		data = append(data, builder.GetStruct(a))
 	}
-	return builder.Append(b, "And", data...).(Combinable)
+	return builder.Append(b, "And", data...).(interfaces.Combinable)
 }
 
-func (b chain) Not(not ...Combinable) Combinable {
+func (b chain) Not(not ...interfaces.Combinable) interfaces.Combinable {
 	data := []interface{}{}
 	for _, n := range not {
 		data = append(data, builder.GetStruct(n))
 	}
-	return builder.Append(b, "Not", data...).(Combinable)
+	return builder.Append(b, "Not", data...).(interfaces.Combinable)
 }
 
-func (b chain) Catch(fn shared.ErrorHandler) Executable {
-	return builder.Append(b, "ErrorHandlers", fn).(Executable)
+func (b chain) Catch(fn shared.ErrorHandler) interfaces.Executable {
+	return builder.Append(b, "ErrorHandlers", fn).(interfaces.Executable)
 }
 
-func (b chain) Then(fns ...shared.Handler) Alternative {
+func (b chain) Then(fns ...shared.Handler) interfaces.Alternative {
 	data := []interface{}{}
 	for _, fn := range fns {
 		data = append(data, fn)
 	}
-	return builder.Append(b, "Then", data...).(Alternative)
+	return builder.Append(b, "Then", data...).(interfaces.Alternative)
 }
 
-func (b chain) Else(fns ...shared.Handler) Catchable {
+func (b chain) Else(fns ...shared.Handler) interfaces.Catchable {
 	data := []interface{}{}
 	for _, fn := range fns {
 		data = append(data, fn)
 	}
-	return builder.Append(b, "Else", data...).(Catchable)
+	return builder.Append(b, "Else", data...).(interfaces.Catchable)
 }
 
-var actionChain = builder.Register(chain{}, ActionData{})
-
-func WithOptions(options ...sharedOption) Startable {
-	return comb.(Proceedable)
+func (b chain) WithContext(ctx *shared.ModuleContext) interface{} {
+	return builder.Set(b, "Context", ctx)
 }
 
-// func OnNodeCreated() Combinable {
-// 	return actionChain.(Selectable).OnNodeCreated()
-// }
-// func OnNodeUpdated() Combinable {
-// 	return actionChain.(Selectable).OnNodeUpdated()
-// }
-// func OnNodeDeleted() Combinable {
-// 	return actionChain.(Selectable).OnNodeDeleted()
-// }
-// func OnFieldCreated(field string) Combinable {
-// 	return actionChain.(Selectable).OnFieldCreated(field)
-// }
-// func OnFieldUpdated(field string) Combinable {
-// 	return actionChain.(Selectable).OnFieldUpdated(field)
-// }
-// func OnFieldDeleted(field string) Combinable {
-// 	return actionChain.(Selectable).OnFieldDeleted(field)
-// }
+var defaultChain = builder.Register(chain{}, ActionData{})

@@ -1,6 +1,7 @@
 package processchain
 
 import (
+	"github.com/denkhaus/processchain/shared"
 	"github.com/juju/errors"
 	"github.com/lann/builder"
 )
@@ -16,40 +17,34 @@ func (b chain) handleError(err error) {
 	}
 }
 
-func (b chain) Execute(ctx goka.Context, m *shared.EventContext) shared.ChainHandledState {
+func (b chain) Execute() shared.ChainState {
 	data := builder.GetStruct(b).(ActionData)
 	if len(data.Then) == 0 {
 		b.handleError(errors.New("no handler defined"))
-		return shared.ChainHandledStateThenFailed
+		return shared.ChainStateThenFailed
 	}
 
-	hCtx := shared.HandlerContext{
-		GokaContext:      ctx,
-		EntityDescriptor: data.EntityDescriptor,
-		EventContext:     m,
-	}
+	// if data.Match(m) {
+	// 	for _, handle := range data.Then {
+	// 		if err := handle(&hCtx); err != nil {
+	// 			b.handleError(errors.Annotate(err, "HandleEvent [then]"))
+	// 			return shared.ChainHandledStateThenFailed
+	// 		}
+	// 	}
 
-	if data.Match(m) {
-		for _, handle := range data.Then {
-			if err := handle(&hCtx); err != nil {
-				b.handleError(errors.Annotate(err, "HandleEvent [then]"))
-				return shared.ChainHandledStateThenFailed
-			}
-		}
+	// 	return shared.ChainHandledStateThen
+	// }
 
-		return shared.ChainHandledStateThen
-	}
+	// if len(data.Else) == 0 {
+	// 	return shared.ChainHandledStateUnhandled
+	// }
 
-	if len(data.Else) == 0 {
-		return shared.ChainHandledStateUnhandled
-	}
+	// for _, handle := range data.Else {
+	// 	if err := handle(&hCtx); err != nil {
+	// 		b.handleError(errors.Annotate(err, "HandleEvent [else]"))
+	// 		return shared.ChainHandledStateElseFailed
+	// 	}
+	// }
 
-	for _, handle := range data.Else {
-		if err := handle(&hCtx); err != nil {
-			b.handleError(errors.Annotate(err, "HandleEvent [else]"))
-			return shared.ChainHandledStateElseFailed
-		}
-	}
-
-	return shared.ChainHandledStateElse
+	return shared.ChainStateFinished
 }
