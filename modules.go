@@ -11,11 +11,11 @@ type HttpRequestOptionable interface {
 }
 
 type HttpRequestProceedable interface {
-	Get() interfaces.Proceedable
-	Delete() interfaces.Proceedable
-	Post() interfaces.Proceedable
-	Patch() interfaces.Proceedable
-	Put() interfaces.Proceedable
+	Get() interfaces.Readable
+	Delete() interfaces.Readable
+	Post() interfaces.Readable
+	Patch() interfaces.Readable
+	Put() interfaces.Readable
 }
 
 type HttpRequestStartable interface {

@@ -1,6 +1,10 @@
 package shared
 
-import "github.com/sirupsen/logrus"
+import (
+	"io"
+
+	"github.com/sirupsen/logrus"
+)
 
 var (
 	log logrus.FieldLogger = logrus.New().WithField("package", "shared")
@@ -8,3 +12,5 @@ var (
 
 type ErrorHandler func(err error)
 type ErrorHandlers []ErrorHandler
+
+type ReaderHandler func(reader io.Reader) (interface{}, error)

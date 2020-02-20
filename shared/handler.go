@@ -35,5 +35,5 @@ func (p *HandlerContext) Get(key string) interface{} {
 // 	return nil
 // }
 
-type Handler func(ctx *HandlerContext) error
+type Handler func(value interface{}) error
 type Handlers []Handler

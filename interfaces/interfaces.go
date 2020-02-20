@@ -6,6 +6,10 @@ type Chain interface {
 	WithContext(ctx *shared.ModuleContext) interface{}
 }
 
+type Readable interface {
+	ReadResult(shared.ReaderHandler) Proceedable
+}
+
 type Combinable interface {
 	Or(or ...Combinable) Combinable
 	And(or ...Combinable) Combinable

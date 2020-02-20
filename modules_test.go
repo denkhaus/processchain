@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/denhaus/processchain/modules/httprequest"
+	"github.com/denkhaus/processchain/modules/httprequest"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -25,15 +25,16 @@ func (suite *commonTest) TearDownTest() {
 
 func (suite *commonTest) TestHttpRequest() {
 	HttpRequest("https://httpbin.org/anything").WithOptions(
-		httprequest.Timeout(10*time.Time),
+		httprequest.Timeout(10*time.Second),
 		httprequest.Accept("application/json"),
-	).Get().Execute().ResultReader(func(reader io.Reader) (interface{}, error) {
-		return json.NewDecoder(reader).Decode()
-	}).Catch(func(err error) {
-		suite.FailNow("error occured", err.Error())
+	).Get().ReadResult(func(reader io.Reader) (interface{}, error) {
+		var result interface{}
+		return result, json.NewDecoder(reader).Decode(&result)
 	}).Then(func(res interface{}) {
 		fmt.Println("result: ", res)
-	})
+	}).Catch(func(err error) {
+		suite.FailNow("error occured", err.Error())
+	}).Execute()
 
 	// suite.True(res.(bool), "return value")
 }

@@ -19,7 +19,7 @@ func (b chain) handleError(err error) {
 
 func (b chain) Execute() shared.ChainState {
 	data := builder.GetStruct(b).(ActionData)
-	if len(data.Then) == 0 {
+	if data.Then == nil {
 		b.handleError(errors.New("no handler defined"))
 		return shared.ChainStateThenFailed
 	}

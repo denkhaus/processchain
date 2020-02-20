@@ -16,7 +16,7 @@ type chain builder.Builder
 type ActionData struct {
 	Context       *shared.ModuleContext
 	ErrorHandlers shared.ErrorHandlers
-	Then          shared.Handlers
+	Then          shared.Handler
 	Else          shared.Handlers
 	Conditions    shared.EvalFuncs
 	Or            []ActionData
@@ -56,12 +56,8 @@ func (b chain) Catch(fn shared.ErrorHandler) interfaces.Executable {
 	return builder.Append(b, "ErrorHandlers", fn).(interfaces.Executable)
 }
 
-func (b chain) Then(fns ...shared.Handler) interfaces.Alternative {
-	data := []interface{}{}
-	for _, fn := range fns {
-		data = append(data, fn)
-	}
-	return builder.Append(b, "Then", data...).(interfaces.Alternative)
+func (b chain) Then(handler shared.Handler) interfaces.Alternative {
+	return builder.Set(b, "Then", handler).(interfaces.Alternative)
 }
 
 func (b chain) Else(fns ...shared.Handler) interfaces.Catchable {
