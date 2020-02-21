@@ -3,6 +3,7 @@ package interfaces
 import "github.com/denkhaus/processchain/shared"
 
 type Chain interface {
+	Readable
 	WithContext(ctx *shared.ModuleContext) interface{}
 }
 
@@ -29,11 +30,11 @@ type Optionable interface {
 	WithOptions(options shared.Option) Proceedable
 }
 type Executable interface {
-	Execute() shared.ChainState
+	Execute() error
 }
 
 type Proceedable interface {
-	Then(fns ...shared.Handler) Alternative
+	Then(fn shared.Handler) Alternative
 }
 
 type Startable interface {

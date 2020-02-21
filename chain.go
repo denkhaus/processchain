@@ -13,21 +13,6 @@ var (
 
 type chain builder.Builder
 
-type ActionData struct {
-	Context       *shared.ModuleContext
-	ErrorHandlers shared.ErrorHandlers
-	Then          shared.Handler
-	Else          shared.Handlers
-	Conditions    shared.EvalFuncs
-	Or            []ActionData
-	And           []ActionData
-	Not           []ActionData
-}
-
-func (b chain) FromGraphQL(gql string) interfaces.Proceedable {
-	return builder.Set(b, "Operation", "created").(interfaces.Proceedable)
-}
-
 func (b chain) Or(or ...interfaces.Combinable) interfaces.Combinable {
 	data := []interface{}{}
 	for _, o := range or {
@@ -53,23 +38,19 @@ func (b chain) Not(not ...interfaces.Combinable) interfaces.Combinable {
 }
 
 func (b chain) Catch(fn shared.ErrorHandler) interfaces.Executable {
-	return builder.Append(b, "ErrorHandlers", fn).(interfaces.Executable)
+	return builder.Set(b, "ErrorHandler", fn).(interfaces.Executable)
 }
 
 func (b chain) Then(handler shared.Handler) interfaces.Alternative {
-	return builder.Set(b, "Then", handler).(interfaces.Alternative)
-}
-
-func (b chain) Else(fns ...shared.Handler) interfaces.Catchable {
-	data := []interface{}{}
-	for _, fn := range fns {
-		data = append(data, fn)
-	}
-	return builder.Append(b, "Else", data...).(interfaces.Catchable)
+	return builder.Append(b, "Then", handler).(interfaces.Alternative)
 }
 
 func (b chain) WithContext(ctx *shared.ModuleContext) interface{} {
 	return builder.Set(b, "Context", ctx)
+}
+
+func (b chain) ReadResult(shared.ReaderHandler) interfaces.Proceedable {
+	return b
 }
 
 var defaultChain = builder.Register(chain{}, ActionData{})

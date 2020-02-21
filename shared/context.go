@@ -13,8 +13,9 @@ var (
 )
 
 type ModuleContext struct {
-	name string
-	data map[string]interface{}
+	name   string
+	Result interface{}
+	data   map[string]interface{}
 }
 
 func NewModuleContext(name string) *ModuleContext {
@@ -23,6 +24,10 @@ func NewModuleContext(name string) *ModuleContext {
 		data: make(map[string]interface{}),
 	}
 	return &ctx
+}
+
+func (p *ModuleContext) Evaluate() error {
+	return nil
 }
 
 func (p *ModuleContext) MustGet(field string) interface{} {

@@ -6,25 +6,8 @@ import (
 	"github.com/denkhaus/processchain/shared"
 )
 
-type HttpRequestOptionable interface {
-	WithOptions(opts ...httprequest.Option) HttpRequestStartable
-}
-
-type HttpRequestProceedable interface {
-	Get() interfaces.Readable
-	Delete() interfaces.Readable
-	Post() interfaces.Readable
-	Patch() interfaces.Readable
-	Put() interfaces.Readable
-}
-
-type HttpRequestStartable interface {
-	HttpRequestOptionable
-	HttpRequestProceedable
-}
-
-func HttpRequest(url string) HttpRequestStartable {
+func HttpRequest(url string) httprequest.HttpRequestStartable {
 	ctx := shared.NewModuleContext("httprequest").Set("url", url)
 	chain := httprequest.Inherit(defaultChain.(interfaces.Chain))
-	return chain.WithContext(ctx).(HttpRequestStartable)
+	return chain.WithContext(ctx).(httprequest.HttpRequestStartable)
 }

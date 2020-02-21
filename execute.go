@@ -6,45 +6,40 @@ import (
 	"github.com/lann/builder"
 )
 
-func (b chain) handleError(err error) {
-	if ehs, ok := builder.Get(b, "ErrorHandlers"); ok {
-		handlers := ehs.(shared.ErrorHandlers)
-		for _, handle := range handlers {
-			handle(err)
-		}
-	} else {
-		panic(errors.Annotate(err, "no catch handler found"))
-	}
+type ActionData struct {
+	Context      *shared.ModuleContext
+	ErrorHandler shared.ErrorHandler
+	Then         shared.Handlers
+	Conditions   shared.EvalFuncs
+	Or           []ActionData
+	And          []ActionData
+	Not          []ActionData
 }
 
-func (b chain) Execute() shared.ChainState {
+func (b chain) handleError(err error) error {
+	if h, ok := builder.Get(b, "ErrorHandler"); ok {
+		h.(shared.ErrorHandler)(err)
+		return nil
+	}
+	return nil
+}
+
+func (b chain) Execute() error {
 	data := builder.GetStruct(b).(ActionData)
-	if data.Then == nil {
-		b.handleError(errors.New("no handler defined"))
-		return shared.ChainStateThenFailed
+	if err := data.Context.Evaluate(); err != nil {
+		return b.handleError(errors.Annotate(err, "Evaluate"))
 	}
 
-	// if data.Match(m) {
-	// 	for _, handle := range data.Then {
-	// 		if err := handle(&hCtx); err != nil {
-	// 			b.handleError(errors.Annotate(err, "HandleEvent [then]"))
-	// 			return shared.ChainHandledStateThenFailed
-	// 		}
-	// 	}
+	result := data.Context.Result
+	for _, handle := range data.Then {
+		res, err := handle(result)
+		if err != nil {
+			return b.handleError(
+				errors.Annotate(err, "HandleEvent [then]"),
+			)
+		}
+		result = res
+	}
 
-	// 	return shared.ChainHandledStateThen
-	// }
-
-	// if len(data.Else) == 0 {
-	// 	return shared.ChainHandledStateUnhandled
-	// }
-
-	// for _, handle := range data.Else {
-	// 	if err := handle(&hCtx); err != nil {
-	// 		b.handleError(errors.Annotate(err, "HandleEvent [else]"))
-	// 		return shared.ChainHandledStateElseFailed
-	// 	}
-	// }
-
-	return shared.ChainStateFinished
+	return nil
 }
